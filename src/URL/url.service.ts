@@ -4,80 +4,34 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BoutiqueEntity } from './entities/URL.entity';
 import { Repository } from 'typeorm';
-import { AddBoutiqueDto } from './DTO/Add-boutique.dto';
-import { UpdateBoutiqueDto } from './DTO/update-boutique.dto';
-import { UserEntity } from '../utilisateur/entities/user.entity';
-import { UserTypeEnum } from '../enums/user.type.enum';
-import { CommentaireEntity } from '../commentaire/entities/commentaire.entity';
-
+import { URLEntity } from './entities/URL.entity';
+import { AddURLDto } from './DTO/Add-URL.dto';
+import { UpdateUrlDto } from "./DTO/update-url.dto";
 @Injectable()
-export class BoutiqueService {
+export class UrlService {
   constructor(
-    @InjectRepository(BoutiqueEntity)
-    private boutiqueRepository: Repository<BoutiqueEntity>,
+    @InjectRepository(URLEntity)
+    private boutiqueRepository: Repository<URLEntity>,
   ) {}
-  async getBoutique(): Promise<BoutiqueEntity[]> {
+  async getBoutique(): Promise<URLEntity[]> {
     return await this.boutiqueRepository.find();
   }
-  async addBoutique(boutique: AddBoutiqueDto, user): Promise<BoutiqueEntity> {
+  async addBoutique(boutique: AddURLDto, user): Promise<URLEntity> {
     const newBoutique = this.boutiqueRepository.create(boutique);
     newBoutique.user = user;
+    newBoutique.clicks = 0;
     return await this.boutiqueRepository.save(newBoutique);
   }
-  async findById(id: number) {
-    const utilisateur = await this.boutiqueRepository.findOne(id);
-    return utilisateur;
-  }
-  async updateBoutique(
-    id: number,
-    boutique: UpdateBoutiqueDto,
-    user,
-  ): Promise<BoutiqueEntity> {
+  async updateUrl(id: number, user: UpdateUrlDto): Promise<URLEntity> {
     const newUser = await this.boutiqueRepository.preload({
       id,
-      ...boutique,
+      ...user,
     });
     if (!newUser) {
       throw new NotFoundException(`le cv d'id ${id} n'existe pas`);
     }
-    if (
-      user.type === UserTypeEnum.ADMIN ||
-      (newUser.user && newUser.user.id === user.id)
-    )
-      return await this.boutiqueRepository.save(newUser);
-    else throw new UnauthorizedException();
-  }
-  async getBoutiqueParUser(id: number): Promise<BoutiqueEntity[]> {
-    const qb = this.boutiqueRepository
-      .createQueryBuilder('boutique')
-      .where('boutique.user.id = :id', { id });
-    return qb.getMany();
-  }
-  async softDeleteBoutique(id: number, user) {
-    const newUser = await this.boutiqueRepository.findOne(id);
-    if (
-      user.type === UserTypeEnum.ADMIN ||
-      (newUser.user && newUser.user.id === user.id)
-    )
-      return this.boutiqueRepository.softDelete(id);
-    else return new UnauthorizedException();
-  }
-  async restoreUtilisateur(id: number, user) {
-    const newUser = await this.boutiqueRepository.query(
-      'select  * from boutique where id = ?',
-      [id],
-    );
-    console.log(newUser);
-    if (!newUser) {
-      throw new NotFoundException();
-    }
-    if (
-      user.type === UserTypeEnum.ADMIN ||
-      (newUser.user && newUser.user.id === user.id)
-    )
-      return this.boutiqueRepository.restore(id);
-    else return new UnauthorizedException();
+    newUser.clicks = newUser.clicks + 1;
+    return await this.boutiqueRepository.save(newUser);
   }
 }

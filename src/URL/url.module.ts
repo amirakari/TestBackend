@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { BoutiqueController } from './boutique.controller';
-import { BoutiqueService } from './boutique.service';
+import { UrlController } from './url.controller';
+import { UrlService } from './url.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BoutiqueEntity } from './entities/URL.entity';
+import { URLEntity } from './entities/URL.entity';
 import { UtilisateurModule } from '../utilisateur/utilisateur.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([BoutiqueEntity]), UtilisateurModule],
-  controllers: [BoutiqueController],
-  providers: [BoutiqueService],
+  imports: [TypeOrmModule.forFeature([URLEntity]), UtilisateurModule],
+  controllers: [UrlController],
+  providers: [UrlService],
 })
-export class BoutiqueModule {}
+export class UrlModule {}

@@ -17,9 +17,6 @@ export class AddUserDto {
   @IsString()
   adresse: string;
   @IsNotEmpty()
-  @IsString()
-  type: string;
-  @IsNotEmpty()
   @IsEmail()
   mail: string;
   @IsNotEmpty()
